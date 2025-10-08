@@ -120,7 +120,7 @@ export default function App() {
         setIsTripsRefreshing(true);
         const client = new APIClient();
         try {
-            const response = await client.getTrips(from.id, to.id, useSettings);
+            const response = await client.getTrips(from.id!, to.id!, useSettings);
 
             setHasInitialized(true);
             setTrips(response.journeys || []);

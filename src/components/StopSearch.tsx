@@ -6,7 +6,7 @@ import { useDebouncedCallback } from "use-debounce";
 
 import APIClient from "../classes/APIClient";
 import { SettingsSet } from "../classes/SettingsSet";
-import { StopFinderLocation } from "../models/TripPlanner/stopFinderLocation";
+import { StopFinderLocation } from "../models/TripPlanner";
 
 type Option = {
     label: string;

@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "7.14.0",
+    "generators": {
+      "typescript-fetch": {
+        "inputSpec": "./tripplanner_v1_swag_efa11_20251002.yml",
+        "generatorName": "typescript-fetch",
+        "output": "./src/models/TripPlanner",
+        "additionalProperties": {
+          "supportsES6": true,
+          "enumPropertyNaming": "original",
+          "modelPropertyNaming": "original",
+          "paramNaming": "original",
+          "withInterfaces": true
+        }
+      }
+    }
+  }
+}

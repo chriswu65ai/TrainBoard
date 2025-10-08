@@ -1,4 +1,4 @@
-import { TripRequestResponseJourney } from "../tripRequestResponseJourney";
+import { TripRequestResponseJourney } from "../models";
 
 import { CancelStatus } from "./CancelStatus";
 import { convertToTPLeg, TPLeg } from "./TPLeg";
@@ -13,6 +13,6 @@ export function convertToTPJourney(journey: TripRequestResponseJourney): TPJourn
     return {
         ...journey,
         hasRealtime: undefined,
-        legs: journey.legs.map(convertToTPLeg),
+        legs: journey.legs!.map(convertToTPLeg),
     };
 }

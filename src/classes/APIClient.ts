@@ -2,14 +2,12 @@ import { addSeconds } from "date-fns";
 
 import { transit_realtime } from "../gen/proto";
 import { ParsedVehiclePositionEntity } from "../models/GTFS/VehiclePositions";
+import { StopFinderLocation, StopFinderResponse, TripRequestResponse } from "../models/TripPlanner";
 import { CancelStatus, getCancelStatus } from "../models/TripPlanner/custom/CancelStatus";
 import { convertToTPJourney, TPJourney } from "../models/TripPlanner/custom/TPJourney";
 import { TPLeg } from "../models/TripPlanner/custom/TPLeg";
 import { TPLegStop } from "../models/TripPlanner/custom/TPLegStop";
 import { TPResponse } from "../models/TripPlanner/custom/TPResponse";
-import { StopFinderLocation } from "../models/TripPlanner/stopFinderLocation";
-import { StopFinderResponse } from "../models/TripPlanner/stopFinderResponse";
-import { TripRequestResponse } from "../models/TripPlanner/tripRequestResponse";
 import { getDevApi } from "../util/env";
 
 import { TransportModeId, transportModes } from "./LineType";
@@ -18,7 +16,7 @@ import { SettingsSet } from "./SettingsSet";
 import { TPStopType, TPCoordOutputFormat, RealtimeRequest } from "./types";
 
 export default class APIClient {
-    static readonly API_VERSION = "10.6.14.22";
+    static readonly API_VERSION = "10.6.21.17";
     static readonly API_URL = "https://api.transport.nsw.gov.au/v1";
     static readonly PROXY_URL = getDevApi()
         ? "http://localhost:8787"
@@ -80,9 +78,10 @@ export default class APIClient {
     async getStops(query: string): Promise<StopFinderResponse> {
         return await this.performJsonRequest<StopFinderResponse>("tp/stop_finder", {
             coordOutputFormat: TPCoordOutputFormat.EPSG_4326,
-            type_sf: TPStopType.Stop,
+            type_sf: TPStopType.Any,
             name_sf: query,
             TfNSWSF: true,
+            TfNSWSFStopsOnly: true,
         });
     }
 
@@ -96,9 +95,16 @@ export default class APIClient {
                 .map((mode) => mode.id)
                 .filter((mode) => !excludedModes.includes(mode))
         );
-        return results.locations.filter((location) =>
-            location.productClasses?.some((product) => includedModeIds.has(product))
-        );
+        return results
+            .locations!.filter((location) =>
+                location.modes?.some((mode) => includedModeIds.has(mode))
+            )
+            .sort((a, b) => {
+                if (a.modes!.length !== b.modes!.length) {
+                    return b.modes!.length - a.modes!.length;
+                }
+                return b.matchQuality! - a.matchQuality!;
+            });
     }
 
     /**
@@ -120,16 +126,19 @@ export default class APIClient {
             calcNumberOfTrips: settings.tripCount,
             ...this.getExcludedModesOptions(settings.excludedModes),
         };
-        const response = await this.performJsonRequest<TripRequestResponse>("tp/trip", params);
-        if (!response.journeys?.length) {
-            throw new Error(
-                response.systemMessages?.length ? response.systemMessages[0].text : "No trips"
-            );
-        }
-        return {
-            ...response,
-            journeys: response.journeys.map(convertToTPJourney),
+        const originalResponse = await this.performJsonRequest<TripRequestResponse>(
+            "tp/trip",
+            params
+        );
+        const response: TPResponse = {
+            ...originalResponse,
+            systemMessages: originalResponse.systemMessages as TPResponse["systemMessages"],
+            journeys: originalResponse.journeys?.map(convertToTPJourney) || [],
         };
+        if (!response.journeys?.length) {
+            throw new Error(response.systemMessages?.[0]?.text || "No trips");
+        }
+        return response;
     }
 
     private getExcludedModesOptions(excludedModes: TransportModeId[]): Record<string, string> {
@@ -247,8 +256,8 @@ export default class APIClient {
                 if (!entities) return noRealtimeLeg;
 
                 // Find realtime stops for origin and destination
-                const originStop = this.findRealtimeStop(leg.origin.id, entities);
-                const destinationStop = this.findRealtimeStop(leg.destination.id, entities);
+                const originStop = this.findRealtimeStop(leg.origin.id!, entities);
+                const destinationStop = this.findRealtimeStop(leg.destination.id!, entities);
 
                 // Find exact trip match
                 const exactTrip = entities.find((entity) =>
@@ -260,7 +269,7 @@ export default class APIClient {
 
                 // Update stop sequence with realtime data
                 const stopSequence = leg.stopSequence?.map((stop) => {
-                    const realtimeStop = this.findRealtimeStop(stop.id, entities);
+                    const realtimeStop = this.findRealtimeStop(stop.id!, entities);
                     if (!realtimeStop) {
                         return {
                             ...stop,

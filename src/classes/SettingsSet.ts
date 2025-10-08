@@ -1,6 +1,6 @@
 import { PaletteMode } from "@mui/material";
 
-import { StopFinderLocation } from "../models/TripPlanner/stopFinderLocation";
+import { StopFinderLocation } from "../models/TripPlanner";
 
 import APIClient from "./APIClient";
 import { TransportModeId } from "./LineType";

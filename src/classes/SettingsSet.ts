@@ -3,6 +3,7 @@ import { PaletteMode } from "@mui/material";
 import { StopFinderLocation } from "../models/TripPlanner";
 
 import APIClient from "./APIClient";
+import BoardStore from "./BoardStore";
 import { TransportModeId } from "./LineType";
 
 interface SettingsSetCore {
@@ -29,7 +30,7 @@ export interface BurnInProtection {
     left: number;
 }
 
-const defaultSettings: SettingsSet = {
+export const defaultSettings: SettingsSet = {
     theme: "dark",
     walkTime: 10,
     tripCount: 6,
@@ -40,30 +41,26 @@ const defaultSettings: SettingsSet = {
 };
 
 export default class SettingsManager {
-    static readonly STORAGE_KEY = "appSettings";
-
     static readSettings(): SettingsSet {
-        let rawSettings;
-        try {
-            rawSettings = JSON.parse(
-                window.localStorage.getItem(SettingsManager.STORAGE_KEY) || ""
-            );
-        } catch (e) {
-            rawSettings = {};
-        }
-
+        const selectedBoard = BoardStore.getSelectedBoard(defaultSettings);
         return {
             ...defaultSettings,
-            ...rawSettings,
+            ...selectedBoard.settings,
         };
     }
 
     static writeSettings(settings: SettingsSet | {}) {
-        window.localStorage.setItem(SettingsManager.STORAGE_KEY, JSON.stringify(settings));
+        BoardStore.updateSelectedBoardSettings(
+            {
+                ...defaultSettings,
+                ...settings,
+            },
+            defaultSettings
+        );
     }
 
     static resetSettings() {
-        SettingsManager.writeSettings({});
+        BoardStore.resetSelectedBoardSettings(defaultSettings);
     }
 
     protected static fetchRemoteSettings(url: string): Promise<any> {

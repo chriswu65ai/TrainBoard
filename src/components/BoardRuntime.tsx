@@ -251,7 +251,7 @@ export default function BoardRuntime({ boardInstance, onUpdateBoard }: BoardRunt
                             {lastApiError}
                         </Alert>
                     </Snackbar>
-                    {settings.mapsEnabled && (
+                    {settings.mapsEnabled ? (
                         <Suspense fallback={<></>}>
                             <TrainMap
                                 settings={settings}
@@ -259,12 +259,12 @@ export default function BoardRuntime({ boardInstance, onUpdateBoard }: BoardRunt
                                 realtimeTripData={realtimeTripData}
                             />
                         </Suspense>
-                    )}
-                    {!settings.mapsEnabled && (
+                    ) : null}
+                    {!settings.mapsEnabled ? (
                         <TripBoardContainer className="main-wrap">
                             <TripBoard trips={trips} settings={settings} />
                         </TripBoardContainer>
-                    )}
+                    ) : null}
                 </Main>
             </Box>
         </ThemeProvider>

@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 
 import SettingsManager, { SettingsSet } from "../classes/SettingsSet";
+import useBoardRotation from "../hooks/useBoardRotation";
 import { BoardInstance } from "../types/BoardInstance";
 import { getAndroid } from "../util/android";
 import { initDpad } from "../util/dpad";
@@ -10,6 +11,7 @@ import BoardRuntime from "./BoardRuntime";
 interface ControlPanelAppProps {
     boardInstances: BoardInstance[];
     selectedBoardIndex: number;
+    rotationEnabled?: boolean;
     onSelectBoard: (index: number) => void;
     onUpdateBoardInstance: (
         index: number,
@@ -44,6 +46,7 @@ export const createDefaultBoardInstances = (): BoardInstance[] => {
 export default function ControlPanelApp({
     boardInstances,
     selectedBoardIndex,
+    rotationEnabled = true,
     onSelectBoard,
     onUpdateBoardInstance,
 }: ControlPanelAppProps) {
@@ -52,23 +55,21 @@ export default function ControlPanelApp({
         initDpad();
     }, []);
 
-    const activeBoardIndex = Math.min(selectedBoardIndex, boardInstances.length - 1);
-    const activeBoard = boardInstances[activeBoardIndex];
+    const { currentBoard, currentBoardIndex } = useBoardRotation({
+        boards: boardInstances,
+        enabled: rotationEnabled,
+        activeBoardIndex: selectedBoardIndex,
+        onSelectBoard,
+    });
 
-    useEffect(() => {
-        if (activeBoardIndex !== selectedBoardIndex) {
-            onSelectBoard(activeBoardIndex);
-        }
-    }, [activeBoardIndex, selectedBoardIndex, onSelectBoard]);
-
-    if (!activeBoard) {
+    if (!currentBoard) {
         return null;
     }
 
     return (
         <BoardRuntime
-            boardInstance={activeBoard}
-            onUpdateBoard={(updater) => onUpdateBoardInstance(activeBoardIndex, updater)}
+            boardInstance={currentBoard}
+            onUpdateBoard={(updater) => onUpdateBoardInstance(currentBoardIndex, updater)}
         />
     );
 }

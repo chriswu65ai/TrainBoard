@@ -1,4 +1,4 @@
-@import "variables";
-@import "global";
-@import "appicon";
-@import "maps";
+@use "variables" as *;
+@use "global";
+@use "appicon";
+@use "maps";

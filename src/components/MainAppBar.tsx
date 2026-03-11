@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 
 import DarkMode from "@mui/icons-material/DarkMode";
-import ExitIcon from "@mui/icons-material/ExitToApp";
+import HomeIcon from "@mui/icons-material/Home";
 import LightMode from "@mui/icons-material/LightMode";
 import MenuIcon from "@mui/icons-material/Menu";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -20,12 +20,14 @@ export default function MainAppBar({
     refreshTimer,
     theme,
     toggleTheme,
+    onExit,
 }: {
     openMenu: () => void;
     label: ReactNode;
     refreshTimer: ReactNode;
     theme: PaletteMode;
     toggleTheme: () => void;
+    onExit: () => void;
 }) {
     return (
         <AppBar position="static" sx={(theme) => ({ backgroundColor: theme.palette.primary.main })}>
@@ -42,7 +44,7 @@ export default function MainAppBar({
                 <IconButton
                     edge="start"
                     color="inherit"
-                    aria-label="menu"
+                    aria-label="refresh"
                     onClick={() =>
                         getAndroid() ? getAndroid()?.reload() : window.location.reload()
                     }
@@ -60,14 +62,8 @@ export default function MainAppBar({
                 <IconButton sx={{ ml: 1 }} onClick={toggleTheme} color="inherit">
                     {theme === "dark" ? <LightMode /> : <DarkMode />}
                 </IconButton>
-                <IconButton
-                    color="inherit"
-                    onClick={() => {
-                        window.location.href = "https://transportnsw.info/trip";
-                    }}
-                    size="large"
-                >
-                    <ExitIcon />
+                <IconButton color="inherit" onClick={onExit} size="large" aria-label="home">
+                    <HomeIcon />
                 </IconButton>
             </Toolbar>
         </AppBar>

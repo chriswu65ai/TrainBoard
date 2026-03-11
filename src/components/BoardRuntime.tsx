@@ -115,7 +115,7 @@ export default function BoardRuntime({ boardInstance, onUpdateBoard }: BoardRunt
     };
 
     const openMenu = () => {
-        navigate({ pathname: `/settings/${SettingsPane.GENERAL}` });
+        navigate({ pathname: `settings/${SettingsPane.GENERAL}` });
     };
 
     const getCurrentTripLabel = () => {
@@ -204,6 +204,7 @@ export default function BoardRuntime({ boardInstance, onUpdateBoard }: BoardRunt
                             currentTheme === "dark" ? "light" : "dark"
                         )
                     }
+                    onExit={() => navigate({ pathname: "/" })}
                 />
                 <Routes>
                     <Route

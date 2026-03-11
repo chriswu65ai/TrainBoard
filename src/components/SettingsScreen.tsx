@@ -11,7 +11,7 @@ import MuiDialogTitle from "@mui/material/DialogTitle";
 import IconButton from "@mui/material/IconButton";
 import createStyles from "@mui/styles/createStyles";
 import withStyles from "@mui/styles/withStyles";
-import { Route, Routes, useMatch, useNavigate } from "react-router-dom";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import { SettingsSet } from "../classes/SettingsSet";
 
@@ -98,19 +98,17 @@ const SettingsScreen: FC<SettingsScreenProps> = (props) => {
         },
     ];
 
-    const activePane = useMatch("/settings/:pane")?.params["pane"];
-    const currentPane = panes.findIndex((pane) => pane.key === activePane) || 0;
+    const activePane = useLocation().pathname.split("/").pop();
+    const currentPane = panes.findIndex((pane) => pane.key === activePane);
     const fullScreen = useMediaQuery("(max-height: 600px)");
 
     return (
         <Dialog id="settings-dialog" open={props.menuOpen} fullWidth={true} fullScreen={fullScreen}>
-            <Tabs value={currentPane} variant="fullWidth">
+            <Tabs value={currentPane >= 0 ? currentPane : 0} variant="fullWidth">
                 {panes.map((pane) => (
                     <Tab
                         key={pane.key}
-                        onClick={() =>
-                            navigate({ pathname: `/settings/${pane.key}` }, { replace: true })
-                        }
+                        onClick={() => navigate({ pathname: pane.key }, { replace: true })}
                         icon={pane.icon}
                         label={pane.name}
                     />
